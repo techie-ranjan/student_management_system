@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+students.db
+.venv/
+venv/
+.env
+.DS_Store
