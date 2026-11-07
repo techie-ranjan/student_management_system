@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">S</span>
+      <div>
+        <h1>Student Management System</h1>
+        <p>Records, grades and class rankings in one place</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn primary" id="addBtn" type="button">Add student</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary" aria-label="Class summary">
+      <div class="summary-item">
+        <span class="summary-value" id="sCount">0</span>
+        <span class="summary-label">Students</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value" id="sAvg">0%</span>
+        <span class="summary-label">Class average</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value" id="sHigh">–</span>
+        <span class="summary-label" id="sHighName">Highest score</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value" id="sLow">–</span>
+        <span class="summary-label" id="sLowName">Lowest score</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value" id="sPass">0%</span>
+        <span class="summary-label">Pass rate</span>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="records" aria-label="Student records">
+        <div class="toolbar">
+          <label class="search">
+            <span class="sr-only">Search students</span>
+            <input id="search" type="search" placeholder="Search name, roll no or course" autocomplete="off">
+          </label>
+          <label>
+            <span class="sr-only">Filter by grade</span>
+            <select id="gradeFilter">
+              <option value="">All grades</option>
+              {% for g in grades %}<option value="{{ g }}">Grade {{ g }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Filter by result</span>
+            <select id="statusFilter">
+              <option value="">Pass and fail</option>
+              <option value="pass">Passed</option>
+              <option value="fail">Failed</option>
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Sort by</span>
+            <select id="sortBy">
+              <option value="rank:asc">Rank</option>
+              <option value="percentage:desc">Marks: high to low</option>
+              <option value="percentage:asc">Marks: low to high</option>
+              <option value="name:asc">Name: A to Z</option>
+              <option value="roll_no:asc">Roll number</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th><th>Student</th><th>Semester</th><th>Marks</th><th>Grade</th><th>Result</th>
+                <th class="right"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div id="empty" class="empty" hidden></div>
+        <div class="records-foot">
+          <span id="shownCount" class="muted"></span>
+          <a class="btn small" href="/api/export.csv" download>Export CSV</a>
+        </div>
+      </section>
+
+      <aside class="insights" aria-label="Insights">
+        <section class="panel">
+          <h2>Top performers</h2>
+          <ol class="leaders" id="leaders"></ol>
+        </section>
+        <section class="panel">
+          <h2>Grade distribution</h2>
+          <div class="bars" id="gradeBars"></div>
+        </section>
+        <section class="panel">
+          <h2>Subject averages</h2>
+          <div class="bars" id="subjectBars"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Add / edit dialog -->
+  <dialog id="formDialog">
+    <form id="studentForm" novalidate>
+      <header class="dlg-head">
+        <h2 id="formTitle">Add student</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close">&times;</button>
+      </header>
+      <div class="dlg-body">
+      <div class="form-grid">
+        <label class="field">Roll number
+          <input name="roll_no" required maxlength="20" placeholder="BCA101">
+          <small class="err" data-err="roll_no"></small>
+        </label>
+        <label class="field">Full name
+          <input name="name" required maxlength="60" placeholder="Riya Kumari">
+          <small class="err" data-err="name"></small>
+        </label>
+        <label class="field wide">Email (optional)
+          <input name="email" type="email" placeholder="name@example.com">
+          <small class="err" data-err="email"></small>
+        </label>
+        <label class="field half">Course
+          <select name="course">{% for c in courses %}<option>{{ c }}</option>{% endfor %}</select>
+          <small class="err" data-err="course"></small>
+        </label>
+        <label class="field half">Semester
+          <select name="semester">{% for i in range(1, 9) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+          <small class="err" data-err="semester"></small>
+        </label>
+      </div>
+      <fieldset>
+        <legend>Marks out of 100</legend>
+        <div class="marks-grid">
+          {% for s in subjects %}
+          <label class="field">{{ labels[s] }}
+            <input name="{{ s }}" type="number" min="0" max="100" step="0.5" value="0" inputmode="decimal">
+            <small class="err" data-err="{{ s }}"></small>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      </div>
+      <footer class="dlg-foot">
+        <span class="live" id="livePreview"></span>
+        <button class="btn ghost" type="button" data-close>Cancel</button>
+        <button class="btn primary" type="submit" id="saveBtn">Save student</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Detail dialog -->
+  <dialog id="viewDialog">
+    <div id="viewBody"></div>
+  </dialog>
+
+  <!-- Delete confirmation -->
+  <dialog id="confirmDialog">
+    <div class="confirm">
+      <h2>Delete this student?</h2>
+      <p id="confirmText"></p>
+      <div class="dlg-foot">
+        <button class="btn ghost" type="button" data-close>Keep student</button>
+        <button class="btn danger" type="button" id="confirmDelete">Delete student</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    window.SMS = {
+      subjects: {{ subjects | tojson }},
+      labels: {{ labels | tojson }},
+      grades: {{ grades | tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
