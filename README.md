@@ -1,172 +1,128 @@
-Student Management System
+# Student Management System
 
-Project Title
+A full-stack Python project for managing student records and analysing academic performance.
+It started as a menu-driven console app; this version adds a **Flask REST API**, a **SQLite**
+database and a responsive **dark web dashboard**. The original console menu is still included.
 
-Student Management System using Python
+## Features
 
-Objective
+- Add, view, search, update and delete student records
+- Automatic grades (A+ to F), percentage, pass/fail result and **class rank** (ties share a rank)
+- Sort by rank, marks, name or roll number; filter by grade and result
+- Highest, lowest and average scores, pass rate, top performers
+- Grade distribution and subject-wise average charts
+- Student detail view with per-subject marks
+- Live grade preview while entering marks, with field-level validation messages
+- CSV export and one-click sample data
+- Works on phones, tablets and desktops
+- Console version (`cli.py`) that shares the same logic and database
 
-The main objective of this project is to manage student records efficiently using Python. The system allows users to add, view, search, update, and delete student information. It also provides features for sorting students based on marks and generating basic statistics.
+## Tech stack
 
-Description
+| Layer     | Technology                                  |
+|-----------|---------------------------------------------|
+| Backend   | Python 3.9+, Flask                          |
+| Database  | SQLite (Python `sqlite3`, no ORM needed)    |
+| Frontend  | HTML, CSS, vanilla JavaScript (no build step) |
+| Testing   | `unittest` with Flask's test client         |
+| Concepts  | Functions, lists and dictionaries, REST, validation, Git/GitHub |
 
-The Student Management System is a menu-driven console application developed in Python. It helps users maintain student records in a simple and organized manner. The program stores information such as Student ID, Name, Age, Course, Marks, and Grade.
+## Project structure
 
-The application performs various operations on student data through a user-friendly menu interface. It is designed for learning basic Python concepts such as functions, loops, conditional statements, lists, dictionaries, and sorting.
+```
+student-management-system/
+├── app.py             # Flask app and REST API routes
+├── services.py        # Validation, grading, ranking, stats, CSV (business logic)
+├── database.py        # SQLite connection and schema
+├── cli.py             # Menu-driven console version
+├── requirements.txt
+├── templates/
+│   └── index.html     # Dashboard page
+├── static/
+│   ├── css/style.css  # Dark theme, responsive layout
+│   └── js/app.js      # Frontend logic (fetch API, rendering, dialogs)
+└── tests/
+    └── test_api.py    # Automated API tests
+```
 
-Features
+## Getting started
 
-- Add new student records
-- View all student records
-- Search for a student using Student ID
-- Update existing student information
-- Delete student records
-- Sort students according to marks
-- Display student ranking list
-- Generate statistics such as:
-  - Total number of students
-  - Highest marks
-  - Lowest marks
-  - Average marks
-- Automatic grade calculation based on marks
+```bash
+# 1. (optional) create a virtual environment
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
 
-Technologies Used
+# 2. install dependencies
+pip install -r requirements.txt
 
-- Python 3
-- Lists
-- Dictionaries
-- Functions
-- Conditional Statements
-- Loops
+# 3. run the web app
+python app.py
+```
 
-Grade Calculation
+Open **http://127.0.0.1:5000**. The database file `students.db` is created automatically.
+Click **Load sample data** on the empty screen to try it out.
 
-Marks Range| Grade
-90 - 100| A+
-80 - 89| A
-70 - 79| B
-60 - 69| C
-50 - 59| D
-Below 50| F
+Console version:
 
-System Requirements
+```bash
+python cli.py
+```
 
-Hardware Requirements
+Run the tests:
 
-- Processor: Intel Core i3 or higher
-- RAM: 2 GB or higher
-- Storage: 100 MB free space
+```bash
+python -m unittest discover -s tests -v
+```
 
-Software Requirements
+## Grading rules
 
-- Operating System: Windows, Linux, or macOS
-- Python 3.x
+| Average | Grade | | Average | Grade |
+|---------|-------|-|---------|-------|
+| 90+     | A+    | | 50 to 59 | C    |
+| 80 to 89 | A    | | 40 to 49 | D    |
+| 70 to 79 | B+   | | below 40 | F    |
+| 60 to 69 | B    | |          |      |
 
-How to Run the Program
+Each student has five subjects (Python, DBMS, Mathematics, Web Tech, English), each out of 100.
+A student **passes** when every subject is 40 or above. Change `PASS_MARK` and `grade_for()` in
+`services.py` to match your own rules.
 
-1. Install Python 3 on your system.
-2. Save the Python source code in a file named "student_management.py".
-3. Open Command Prompt or Terminal.
-4. Navigate to the project folder.
-5. Run the following command:
+## REST API
 
-python student_management.py
+| Method | Endpoint                 | Description                                            |
+|--------|--------------------------|--------------------------------------------------------|
+| GET    | `/api/students`          | List students. Query: `q`, `sort`, `order`, `grade`, `status` |
+| POST   | `/api/students`          | Create a student                                       |
+| GET    | `/api/students/<id>`     | Get one student                                        |
+| PUT    | `/api/students/<id>`     | Update a student                                       |
+| DELETE | `/api/students/<id>`     | Delete a student                                       |
+| GET    | `/api/stats`             | Class statistics, toppers, distributions               |
+| POST   | `/api/seed`              | Insert sample students                                 |
+| GET    | `/api/export.csv`        | Download all records as CSV                            |
 
-6. Select the desired option from the menu.
+Example:
 
-Menu Options
+```bash
+curl -X POST http://127.0.0.1:5000/api/students \
+  -H "Content-Type: application/json" \
+  -d '{"roll_no":"BCA101","name":"Riya Kumari","course":"BCA","semester":3,
+       "python":92,"dbms":85,"maths":78,"web":88,"english":81}'
+```
 
-1. Add Student
-2. View Students
-3. Search Student
-4. Update Student
-5. Delete Student
-6. Sort Students
-7. Statistics
-8. Exit
+Validation errors return HTTP 422 with a `fields` object; unknown ids return 404.
 
-Sample Student Record
+## Ideas to extend it
 
-Student ID : 101
+- Login for teachers (Flask-Login) and a read-only student view
+- Attendance tracking and semester-wise result history
+- Charts with Chart.js and PDF report cards
+- Move to PostgreSQL or MySQL with SQLAlchemy
+- Deploy on Render, Railway or PythonAnywhere (use `gunicorn app:app`)
 
-Name : Rahul Sharma
+## Author
 
-Age : 20
+Built as a Python portfolio project. Add your name, GitHub and LinkedIn links here.
 
-Course : BCA
+## License
 
-Marks : 85
-
-Grade : A
-
-Learning Outcomes
-
-Through this project, the following concepts of Python can be learned:
-
-- Function Creation
-- Data Storage using Lists and Dictionaries
-- Menu-Driven Programming
-- Searching Techniques
-- Sorting Techniques
-- Basic Data Analysis
-- User Input Handling
-
-Future Enhancements
-
-This project is currently a basic console-based Student Management System. In the future, the following features can be added to improve its functionality and usability:
-
-1. File Handling
-   
-   - Save student records permanently in text, CSV, or JSON files.
-   - Load records automatically when the program starts.
-
-2. Database Integration
-   
-   - Use SQLite or MySQL to store student information.
-   - Manage large amounts of data more efficiently.
-
-3. Graphical User Interface (GUI)
-   
-   - Develop a user-friendly interface using Python's Tkinter library.
-   - Replace the console menu with buttons, forms, and tables.
-
-4. Student Login System
-   
-   - Allow students to log in and view their own records.
-   - Implement password protection for security.
-
-5. Attendance Management
-   
-   - Record and track student attendance.
-   - Generate attendance reports.
-
-6. Result and Report Card Generation
-   
-   - Generate detailed report cards automatically.
-   - Calculate percentages, grades, and overall performance.
-
-7. Data Validation
-   
-   - Validate user inputs to prevent incorrect data entry.
-   - Ensure marks, age, and IDs are entered in the correct format.
-
-8. Search and Filter Options
-   
-   - Search students by name, course, or grade.
-   - Filter records based on specific criteria.
-
-9. Export Reports
-   
-   - Export student data to PDF or Excel files.
-   - Generate printable reports.
-
-10. Web-Based Application
-    
-    - Convert the project into a web application using Python frameworks such as Flask or Django.
-    - Access the system through a web browser.
-
-These enhancements can make the Student Management System more efficient, secure, user-friendly, and suitable for real-world educational institutions.
-
-Conclusion
-
-The Student Management System is a simple and effective Python application for managing student records. It demonstrates the practical implementation of fundamental Python programming concepts and provides a strong foundation for developing more advanced management systems in the future.
+MIT. Free to use for learning and portfolios.
